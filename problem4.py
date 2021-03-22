@@ -62,7 +62,7 @@ def palindrom_program():
         f"of {start_num} to {end_num}, \nthat are palindroms: ")
     
     for palindroms in palindroms_in(products.keys()):
-        print(f"{palindroms}: from {products[palindroms]}")
+        print(f"{palindroms} from {products[palindroms]}")
 
 
 palindrom_program()
