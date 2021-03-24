@@ -5,57 +5,83 @@ from tqdm import tqdm
 
 startTime = datetime.now()
 
-def _generate_list(max_number):
-    """ Creates a list of integers from 1 to the given number """
+def _index_is_value_list_gen(max_number):
+    """ Creates a list of integers from 0 to the given number.
+    The index of the list correspond to the value."""
     integers_to_n = []
-    for i in range(3, max_number + 1, 2):
+    for i in range(0, max_number + 1, 1):
         integers_to_n.append(i)
     return integers_to_n
 
-def _remove_multiples(integer_list, number):
-    """ Removes all the multiples of a number from a list 
-    of integers """
+def _zero_all_multiples(integer_list, number):
+    """ Sets all the multiples of a number from a list 
+    of integers to zero, integer list must start from 0 """
     # checks what the maximum number in the list is
     highest_number = max(integer_list)
     # we start with a multiple of 2 for each number
+    # otherwise the original number is deleted
     n = 2
     # the multiple of the number cant exceede the maximum number
     while n * number <= highest_number:
-        print(n*number)
-        # we expect an error, as e.g. 6 is already deleted 
-        # because it is a multiple of 2
-        try:
-            integer_list.remove(number * n)
-        except:
-            pass
+        # sets the value of the n times multiple to 0,
+        # faster method than checking the list for a given value
+        integer_list[n * number] = 0
         # we go to the next multiple of the number
         n += 1
+    # returns a list with multiple set to zero
+    return integer_list
+
+def _delete_values_from_list(integer_list, value):
+    # list comprehension, fancy for-loop
+    integer_list = [i for i in integer_list if i != value]
     return integer_list
 
 def _sieving(integer_list):
     # create a list to store our primes in
     primes = []
-    # repeat our multiple removing until our list is empty
-    while integer_list:        
-        # check lowest number in the list
-        lowest_number = integer_list[0]
-        # lowest number must be a prime so safe it in the primes list
-        primes.append(lowest_number)
-        # now remove all the multiples of the lowest number from our integers
-        integer_list = _remove_multiples(integer_list, lowest_number)
-        # to get a new lowest number, we delete the old one
-        # could be put in remove multiples function, but I want to 
-        # keep that one only for multiples
-        integer_list.remove(lowest_number)
+    # we only have to run the check until highest number ** 0.5
+    max_number = int(math.sqrt(integer_list[-1]))
+    # repeat the elimination prozess until current number
+    # is the square root of the max number
+        # tqdm is used to give us a loading bar over this loop
+    for new_prime in tqdm(range(2, max_number)):    
+        # check for a new number and the value of it is non zero
+        if new_prime not in primes and integer_list[new_prime] != 0:
+            # this number must be a prime,so zero all the multiples 
+            # of it in our integer list, so they are not checked in the next run
+            integer_list = _zero_all_multiples(integer_list, new_prime)
+    # deletes all 0s (non primes) from the list and then adds the remaining values to the primes list
+    primes = _delete_values_from_list(integer_list, 0)[1:]
+    # returns the list we stored the primes in
     return primes
 
 
-
 # creates our prime list until the max number and use the sieving method on
-max_number = 2_000_000
-prime_list = _sieving(_generate_list(max_number))
+max_number = 10_000_000
+prime_list = _sieving(_index_is_value_list_gen(max_number))
 
 # gives the results
 print(f"\n\nWe found {len(prime_list)} primes. The sum over these primes "
-    f"is {sum(prime_list)}.")
+     f"is {sum(prime_list)}.")
 print(f"The caluclation took {datetime.now() - startTime}.")
+
+# times
+# 10: 20.4 ms
+# 100: 15.4 ms
+# 1000: 15.4 ms
+# 10_000: 26 ms
+# 100_000: 240 ms
+# 1_000_000: 3339 ms
+# 2_000_000: 7160 ms
+#
+# What did i learn:
+#   checking a list for values is way slower to zero that value, use the index instead (if know)
+#   in this case the index corresponds to the value in the list
+#
+#   dont brute force it, method works because it is not checking if the number is dvivisible by the primes before
+#   it eliminates numbers from a pool of possible primes by eliminiating multiples of all previous primes
+#   therefore it only checks if the number was eliminated 
+#   (in this case the value corresponding to the number as an index is non zero)
+#
+#   drastic performance by only checking primes to be multiplied until the square root
+#   of our limit / the max integer in the list
