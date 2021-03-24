@@ -45,9 +45,9 @@ def _sieving(integer_list):
     # is the square root of the max number
         # tqdm is used to give us a loading bar over this loop
     for new_prime in tqdm(range(2, max_number)):    
-        # check for a new number and the value of it is non zero
+        # only checks the lowest number not in the prime list, when the value of it is non zero
         if new_prime not in primes and integer_list[new_prime] != 0:
-            # this number must be a prime,so zero all the multiples 
+            # this number must be a prime, so zero all the multiples 
             # of it in our integer list, so they are not checked in the next run
             integer_list = _zero_all_multiples(integer_list, new_prime)
     # deletes all 0s (non primes) from the list and then adds the remaining values to the primes list
@@ -73,9 +73,10 @@ print(f"The caluclation took {datetime.now() - startTime}.")
 # 100_000: 240 ms
 # 1_000_000: 3339 ms
 # 2_000_000: 7160 ms
+# 10_000_000: 4978.4 ms
 #
 # What did i learn:
-#   checking a list for values is way slower to zero that value, use the index instead (if know)
+#   checking a list for values is way slower to zero that value, use the index instead (if known)
 #   in this case the index corresponds to the value in the list
 #
 #   dont brute force it, method works because it is not checking if the number is dvivisible by the primes before
